@@ -2,6 +2,26 @@
 
 # Inspired by https://github.com/canonical/vulnerability-management-scanning/blob/main/secscan/scanners.py#L1190
 
+usage() {
+    echo "Usage: $0 <core-snap-name>"
+    echo ""
+    echo "  core-snap-name  The name of the core base snap to scan (e.g. core, core20, core22)"
+    echo ""
+    echo "Example:"
+    echo "  $0 core20"
+}
+
+if [[ "${1:-}" == "--help" || "${1:-}" == "-h" ]]; then
+    usage
+    exit 0
+fi
+
+if [[ $# -lt 1 ]]; then
+    echo "Error: missing required argument <core-snap-name>"
+    usage
+    exit 1
+fi
+
 core=$1
 
 PACKAGE_LIST="package-list.txt"
@@ -10,7 +30,7 @@ CORE_NAME="name.txt"
 
 echo "1. Check dependencies"
 echo ""
-if ! command -v snap >/dev/null 2>&1; then
+if ! command -v snap >/dev/null 2>&1; :wthen
    echo "Error: this script requires \"snapd\""
    exit 1
 else
@@ -18,7 +38,7 @@ else
    echo "Found \"snapd\" version $version"
 fi
 
-if ! command -v yq >/dev/null 2>&1; then
+if ! command -v yq >/dev/null 2>&1; then:
    echo "Error: this script requires \"yq\""
    exit 1
 else
