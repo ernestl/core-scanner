@@ -5,7 +5,6 @@
 core=$1
 
 PACKAGE_LIST="package-list.txt"
-OSV_ECOSYSTEM="Ubuntu:16.04:LTS"
 CORE_MANIFEST="usr/share/snappy/dpkg.yaml"
 CORE_NAME="name.txt"
 
@@ -42,33 +41,34 @@ manifest=$(basename "$CORE_MANIFEST")
 curdir=$(pwd)
 tmpdir=$(mktemp -d)
 (  
-   cd $tmpdir
+   cd "$tmpdir" || echo "Error: cannot change directory to $tmpdir"
    echo "Download $core"
-   snap download $core --stable
-   if ! find -name "$core*.snap" | grep -q .; then 
+   snap download "$core" --stable
+   if ! find . -name "$core*.snap" | grep -q .; then 
       echo "Error: cannot find downloaded core snap"
       exit 1
    else
-      snap_name=$(find -name "$core*.snap")
+      snap_name=$(find . -name "$core*.snap")
    fi
    
    echo "Copy package manifest $CORE_MANIFEST to $curdir."
-   unsquashfs *.snap >/dev/null 2>&1
+   unsquashfs ./*.snap >/dev/null 2>&1
    cp "squashfs-root/$CORE_MANIFEST" "$curdir"
-   rm -rf squahttps://github.com/canonical/vulnerability-management-scanning/blob/main/secscan/scanners.py#L1190shfs-root
+   rm -rf squashfs-root
    if ! find "$curdir" -name "$manifest" | grep -q .; then
       echo "Error: cannot find extracted package manifest"
       exit 1
    fi
 
-   name="$(basename $snap_name)"
+   name="$(basename "$snap_name")"
    file="$curdir/$CORE_NAME"
    echo "Write core snap name $name into file $file"
    echo "$name" > "$file"
 )
+rm -rf "$tmpdir"
 echo ""
 
-echo "3. Generate package list file named $PACKAGE_LIST from yaml manifest file $filename."
+echo "3. Generate package list file named $PACKAGE_LIST from yaml manifest file $manifest."
 echo ""
 mapfile -t packages < <(yq -r '.packages[]' "$manifest")
 
@@ -131,7 +131,7 @@ for ecosystem in "${ecosystems[@]}"; do
 	    }
 	  ]
 	}
-	' --args "${packages[@]}" > $lockfile
+	' --args "${packages[@]}" > "$lockfile"
 
 	printf "The first 10 line of $lockfile:\n%s\n" "$(head -n 10 "$lockfile")"
 	lockfiles+=("$lockfile")
@@ -144,7 +144,7 @@ core_name=$(cat $CORE_NAME)
 
 for lockfile in "${lockfiles[@]}"; do
 	result="result_${core_name}_${lockfile%.json}.md"
-	osv-scanner --lockfile osv-scanner:$lockfile -f markdown > $result
+	osv-scanner --lockfile osv-scanner:"$lockfile" -f markdown > "$result"
 
 	echo "Writing result for scan based on $lockfile to $result."
 done
