@@ -30,7 +30,7 @@ CORE_NAME="name.txt"
 
 echo "1. Check dependencies"
 echo ""
-if ! command -v snap >/dev/null 2>&1; :wthen
+if ! command -v snap >/dev/null 2>&1; then
    echo "Error: this script requires \"snapd\""
    exit 1
 else
@@ -38,7 +38,7 @@ else
    echo "Found \"snapd\" version $version"
 fi
 
-if ! command -v yq >/dev/null 2>&1; then:
+if ! command -v yq >/dev/null 2>&1; then
    echo "Error: this script requires \"yq\""
    exit 1
 else
@@ -48,6 +48,7 @@ fi
 
 if ! command -v osv-scanner >/dev/null 2>&1; then
    echo "Error: this script requires \"osv-scanner\""
+   echo "To install: go install github.com/google/osv-scanner/v2/cmd/osv-scanner@latest"
    exit 1
 else
    version=$(osv-scanner --version | grep '^osv-scanner version:' | cut -d' ' -f3)
